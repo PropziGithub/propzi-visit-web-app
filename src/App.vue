@@ -1,30 +1,67 @@
 <template>
   <div id="nav">
-    <router-link to="/">Home</router-link> |
-    <router-link to="/about">About</router-link>
+    <NavBarAll />
   </div>
-  <router-view/>
+  <router-view />
 </template>
 
+<script>
+import NavBarAll from "./components/NavBarAll";
+
+export default {
+  name: "App",
+  components: {
+    NavBarAll,
+  },
+  data() {
+    return {};
+  },
+};
+</script>
 <style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
+@import url("https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;500;700;900&display=swap");
+
+.body {
+  font-family: Roboto;
+}
+.table-section {
+  display: none;
+  justify-content: center;
+  align-items: center;
+
+  height: 70vh;
 }
 
-#nav {
-  padding: 30px;
+.inner-nav li a {
+  padding: 0.8rem 0.5rem !important;
+  text-transform: initial;
+  font-weight: 600;
 }
 
-#nav a {
-  font-weight: bold;
-  color: #2c3e50;
+.activated {
+  display: flex;
+}
+.report {
+  display: flex;
+  flex-direction: column;
+  margin-top: 3em;
 }
 
-#nav a.router-link-exact-active {
-  color: #42b983;
+h1,
+h2,
+h3,
+h4 {
+  margin-bottom: 0 !important;
+}
+
+@media (min-width: 768px) {
+  .card {
+    width: 100% !important;
+  }
+}
+@media (min-width: 568px) {
+  .card {
+    width: 100% !important;
+  }
 }
 </style>
