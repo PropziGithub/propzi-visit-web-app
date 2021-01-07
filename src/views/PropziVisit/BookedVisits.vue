@@ -1,10 +1,13 @@
 <template>
   <nav-bar-opt></nav-bar-opt>
   <main class="container">
+    <!-- <div class="alert alert-success">
+      <p>{{ message }}</p>
+    </div> -->
     <section class="table-section activated" id="all-visits">
       <div class="card w-75">
         <div class="card-header">
-          <h3>Registered Visits</h3>
+          <h3>Booked Visits</h3>
         </div>
         <div class="table-responsive">
           <table class="table table-striped" id="table-data">
@@ -17,7 +20,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr class="text-center" v-if="registeredVisits.length <= 0">
+              <tr class="text-center" v-if="bookedVisits.length <= 0">
                 <td colspan="4">
                   <div class="spinner-grow" role="status">
                     <span class="visually-hidden">Loading...</span>
@@ -27,32 +30,32 @@
               </tr>
               <tr
                 class="text-center"
-                v-for="visit in registeredVisits"
+                v-for="visit in bookedVisits"
                 :key="visit.propertyId"
                 v-else
               >
                 <th scope="row">{{ visit.propertyId }}</th>
                 <td
                   :class="
-                    visit.status.toLowerCase() === 'pending'
+                    visit.visited === false
                       ? 'badge badge-warning'
                       : 'badge badge-success'
                   "
-                  class="p-2 mt-2"
+                  class="p-2"
                 >
-                  {{ visit.status }}
+                  Pending
                 </td>
-                <td>{{ visit.dateBooked.toDate().toLocaleString() }}</td>
+                <td>{{ new Date(visit.dateBooked).toDateString() }}</td>
                 <td>
                   <router-link
                     :to="{
                       name: 'visit',
                       params: {
-                        propertyId: visit.propertyId,
+                        bookedId: visit.bookedId,
                         userId: visit.userId,
                       },
                     }"
-                    v-if="visit.status.toLowerCase() === 'pending'"
+                    v-if="visit.visited === false"
                     class="btn-raised btn-sm btn btn-info"
                   >
                     Visit Now
@@ -77,7 +80,8 @@ export default {
   name: "PropziVisit",
   data() {
     return {
-      registeredVisits: [],
+      message: "",
+      bookedVisits: [],
     };
   },
 
@@ -89,23 +93,24 @@ export default {
       }
       doc.docs.forEach(async (doc) => {
         const paths = doc.ref.path;
-        const collections = await database.doc(paths);
+        const docs = await database.doc(paths);
 
-        const userCollection = collections.collection("User");
+        const userCollection = docs.collection("User");
         const userId = userCollection.parent.id;
-        const propziVisitCollection = collections.collection("PropziVisit");
+        const propziVisitCollection = docs.collection("PropziVisit");
 
         // Get Pending Visits
-        const propziVisits = await propziVisitCollection
-          .where("status", "==", "Pending")
+        const bookedVisits = await propziVisitCollection
+          .where("visited", "==", false)
           .get();
 
         // Check if Visit not empty
-        if (!propziVisits.empty) {
-          propziVisits.forEach((propziVisit) => {
-            return this.registeredVisits.push({
+        if (!bookedVisits.empty) {
+          bookedVisits.docs.forEach((propziVisit) => {
+            return this.bookedVisits.push({
               ...propziVisit.data(),
               userId,
+              bookedId: propziVisit.id,
             });
           });
         }
@@ -113,9 +118,8 @@ export default {
     },
   },
   mounted() {
-    // this.getRegisteredVisites();
     this.getAllVisits();
-    console.log(12);
+    // this.message = location.search.slice(9);
   },
 };
 </script>

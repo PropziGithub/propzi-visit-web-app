@@ -54,9 +54,29 @@ h4 {
   margin-bottom: 0 !important;
 }
 
+select option{
+  font-size: 14px !important;
+}
+/* .is-filled{
+  height: 0;
+} */
+
+.table th,
+.table td {
+  vertical-align: 0 !important;
+}
+
 @media (min-width: 768px) {
   .card {
     width: 100% !important;
+  }
+  .form-visit {
+    width: 80%;
+  }
+}
+@media (min-width: 1224px) {
+  .form-visit {
+    width: 45%;
   }
 }
 @media (min-width: 568px) {
@@ -64,4 +84,5 @@ h4 {
     width: 100% !important;
   }
 }
+
 </style>

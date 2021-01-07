@@ -28,7 +28,7 @@
               <div class="col-md-6">
                 <div class="form-group">
                   <label for="representative" class="bmd-label-floating"
-                    >Representative</label
+                    >Rep Name</label
                   >
                   <input
                     type="text"
@@ -42,15 +42,15 @@
             <div class="row">
               <div class="col-md-6">
                 <div class="form-group">
-                  <label for="exampleSelect1" class="bmd-label-floating"
-                    >Role in propzi</label
+                  <label for="exampleSelect1" class="bmd-label-floating p-0"
+                    >Rep Role</label
                   >
                   <select
                     class="form-control"
                     id="exampleSelect1"
                     v-model="formData.repRole"
                   >
-                    <option selected>Choose..</option>
+                    <option selected disabled>Choose..</option>
                     <option>Representative</option>
                     <option>Regional Rep</option>
                     <option>Other</option>
@@ -59,20 +59,20 @@
               </div>
               <div class="col-md-6">
                 <div class="form-group">
-                  <label for="propziImpact" class="bmd-label-floating"
-                    >Propzi Impact</label
+                  <label for="category" class="bmd-label-floating"
+                    >Structure Category</label
                   >
                   <input
                     type="text"
                     class="form-control"
-                    id="propziImpact"
-                    v-model="formData.propziImpact"
+                    id="category"
+                    v-model="formData.category"
                   />
                 </div>
               </div>
             </div>
             <div class="row">
-              <div class="col-md-12">
+              <div class="col-md-6">
                 <div class="form-group">
                   <label for="insights" class="bmd-label-floating"
                     >Insights</label
@@ -82,6 +82,20 @@
                     class="form-control"
                     id="insights"
                     v-model="formData.insight"
+                  />
+                </div>
+              </div>
+
+              <div class="col-md-6">
+                <div class="form-group">
+                  <!-- <label for="nextVisit" class="bmd-label-floating"
+                    >Next Visit</label
+                  > -->
+                  <input
+                    type="date"
+                    class="form-control"
+                    id="nextVisit"
+                    v-model="formData.nextVisit"
                   />
                 </div>
               </div>
@@ -106,7 +120,7 @@
               <div class="col-md-12">
                 <button
                   type="submit"
-                  class="btn mt-4 btn-sm btn-block btn-primary btn-raised"
+                  class="btn mt-4 py-2 btn-sm btn-block btn-primary btn-raised"
                 >
                   Visit Now
                   <span
@@ -127,18 +141,24 @@
 
 <script>
 import { database } from "../../firebase/firebaseConfig";
+import firebase from "firebase";
 
 export default {
   name: "Visits-Now",
+
   data() {
     return {
+      message: "",
       formData: {
-        propertyId: this.$route.params.propertyId,
+        propertyId: this.$route.params.bookedId,
         representative: "",
         repRole: "",
-        propziImpact: "",
+        category: "",
         insights: "",
         description: "",
+        nextVisit: "",
+        lastVisit: firebase.firestore.Timestamp.now(),
+        visited:true
       },
     };
   },
@@ -148,24 +168,20 @@ export default {
         .collection("UserDetails")
         .doc(this.$route.params.userId)
         .get();
+
       if (doc.exists) {
         const paths = doc.ref.path;
         const collections = await database.doc(paths);
-        const visitedProperty = collections
-          .collection("PropziVisit")
-          .doc("VisitedProperty");
-
-        const visitedPropertyDoc = await database.doc(visitedProperty.path);
-        const allvisitedProperty = visitedPropertyDoc.collection(
-          this.$route.params.propertyId
-        );
         const propertyCollection = collections.collection("Property");
         const userCollection = collections.collection("User");
 
-        allvisitedProperty
-          .get()
-          .then((doc) => {
-           console.log(doc.docs);
+        collections
+          .collection("PropziVisit")
+          .doc(this.$route.params.bookedId)
+          .update(this.formData)
+          .then(() => {
+            this.message = "Successfully added";
+            this.$router.push("/?message=" + this.message);
           })
           .catch((err) => {
             console.log(err.message);
@@ -173,11 +189,11 @@ export default {
       }
 
       // database.collection('UserDetails')
-      console.log(this.formData);
+      // console.log(this.formData);
     },
   },
   mounted() {
-    this.submitformData();
+    console.log(document.querySelector(".is-filled"));
   },
 };
 </script>

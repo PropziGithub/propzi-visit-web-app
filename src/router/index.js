@@ -10,11 +10,11 @@ const routes = [
     component: PropziVisit,
   },
   {
-    path: "/registered-visits",
-    name: "registered-visits",
+    path: "/booked-visit",
+    name: "booked-visits",
     component: () =>
       import(
-        /* webpackChunkName: "about" */ "../views/PropziVisit/RegisteredVisit.vue"
+        /* webpackChunkName: "about" */ "../views/PropziVisit/BookedVisits.vue"
       ),
   },
   {
@@ -26,12 +26,12 @@ const routes = [
       ),
   },
   {
-    path: "/report/:userId/:propertyId",
+    path: "/report/:userId/:visitId/:propertyId",
     name: "report",
     component: Report,
   },
   {
-    path: "/visit/:userId/:propertyId",
+    path: "/visit/:userId/:bookedId",
     name: "visit",
     component: Visit,
   },

@@ -35,26 +35,30 @@
                 :key="visit.propertyId"
               >
                 <th scope="row">{{ visit.propertyId }}</th>
-                <td>{{ visit.representive }}</td>
+                <td>{{ visit.representative }}</td>
                 <td
                   :class="
-                    visit.status.toLowerCase() === 'pending'
-                      ? 'badge badge-warning'
-                      : 'badge badge-success'
+                    visit.visited
+                      ? 'badge badge-success'
+                      : 'badge badge-warning'
                   "
                   class="p-2 mt-2"
                 >
-                  {{ visit.status }}
+                  Visited
                 </td>
-                <td>{{ visit.nextVisit }}</td>
-                <td>{{ visit.lastVisit }}</td>
+                <td>{{ new Date(visit.nextVisit).toDateString() }}</td>
+                <td>{{ visit.lastVisit.toDate().toDateString() }}</td>
                 <td>
                   <router-link
                     :to="{
                       name: 'report',
-                      params: { propertyId: visit.propertyId,userId:visit.userId },
+                      params: {
+                        visitId: visit.visitId,
+                        propertyId: visit.propertyId,
+                        userId: visit.userId,
+                      },
                     }"
-                    v-if="visit.status.toLowerCase() === 'visited'"
+                    v-if="visit.visited"
                     class="btn-raised btn-sm btn btn-success"
                   >
                     See Report
@@ -99,16 +103,17 @@ export default {
         const propziVisitCollection = collections.collection("PropziVisit");
 
         // Get Pending Visits
-        const propziVisits = await propziVisitCollection
-          .where("status", "==", "Visited")
+        const visitedProperties = await propziVisitCollection
+          .where("visited", "==", true)
           .get();
 
         // Check if Visit not empty
-        if (!propziVisits.empty) {
-          propziVisits.forEach((propziVisit) => {
+        if (!visitedProperties.empty) {
+          visitedProperties.forEach((propziVisit) => {
             return this.visitedProperties.push({
               ...propziVisit.data(),
               userId,
+              visitId: propziVisit.id,
             });
           });
         }
@@ -116,9 +121,7 @@ export default {
     },
   },
   mounted() {
-    // this.getRegisteredVisites();
     this.getAllVisits();
-    console.log(12);
   },
 };
 </script>

@@ -64,18 +64,24 @@
         <div class="col-md-6">
           <div class="card">
             <div class="card-header">
-              <h4>Visit Report - <span class="text-success">{{ user.fullName }}</span></h4>
+              <h4 id>
+                Visit Report<span class="text-success" v-if="user.fullName">
+                  - {{ user.fullName.toUpperCase() }}</span
+                >
+              </h4>
             </div>
-            <div class="card-body" id="visit-report" v-if="report !== {}">
+            <div class="card-body" id="visit-report" v-if="report !== null">
               <div class="card-title">
                 <strong>Representative</strong>:
                 <span>{{ report.representative }}</span>
               </div>
               <div class="card-title">
-                <strong>Next Visit</strong>: <span>{{ report.nextVisit }}</span>
+                <strong>Next Visit</strong>:
+                <span>{{ new Date( report.nextVisit).toDateString() }}</span>
               </div>
               <div class="card-title">
-                <strong>Last Visit</strong>: <span>{{ report.lastVisit }}</span>
+                <strong>Last Visit</strong>:
+                <span>{{ report.lastVisit.toDate().toDateString() }}</span>
               </div>
               <div class="card-title">
                 <strong>Insights</strong>:
@@ -94,17 +100,12 @@
                 </button>
               </div>
             </div>
-            <div class="card-body text-center" id="visit-report" v-else>
-              <div class="card-title" v-if="message !== ''">
-                <h3>{{ message }}</h3>
+            <!-- <div class="card-body text-center" id="visit-report" v-else>
+             
+              <div class="spinner-grow" role="status">
+                <span class="visually-hidden">Loading...</span>
               </div>
-
-              <div class="card-title mt-4">
-                <router-link to="/" class="btn btn-raised btn-sm btn-info">
-                  Back
-                </router-link>
-              </div>
-            </div>
+            </div> -->
           </div>
         </div>
       </div>
@@ -122,7 +123,7 @@ export default {
       user: "",
       message: "",
       property: {},
-      report: {},
+      report: null,
       propertyDetails: [],
     };
   },
@@ -140,7 +141,7 @@ export default {
         const userCollection = collections.collection("User");
 
         propziVisitCollection
-          .doc(this.$route.params.propertyId)
+          .doc(this.$route.params.visitId)
           .get()
           .then((doc) => {
             if (doc.exists) {

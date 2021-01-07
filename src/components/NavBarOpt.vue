@@ -7,8 +7,8 @@
         </router-link>
       </li>
       <li class="nav-item">
-        <router-link to="/registered-visits" class="nav-link">
-          Registered visits
+        <router-link to="/booked-visit" class="nav-link">
+          Booked visits
         </router-link>
       </li>
 

@@ -16,11 +16,12 @@
                 <th scope="col">Visit Status</th>
                 <th scope="col">Next Visit</th>
                 <th scope="col">Last Visit</th>
+                <th scope="col">Booked Date</th>
                 <th scope="col">Action</th>
               </tr>
             </thead>
             <tbody>
-              <tr class="text-center" v-if="propziVisit.length <= 0">
+              <tr class="text-center" v-if="allVisits.length <= 0">
                 <td colspan="6">
                   <div class="spinner-grow" role="status">
                     <span class="visually-hidden">Loading...</span>
@@ -30,36 +31,58 @@
               <tr
                 v-else
                 class="text-center"
-                v-for="visit in propziVisit"
+                v-for="visit in allVisits"
                 :key="visit.propertyId"
               >
                 <th scope="row">{{ visit.propertyId }}</th>
-                <td v-if="visit.representive">{{ visit.representive }}</td>
+                <td v-if="visit.representative">{{ visit.representative }}</td>
                 <td v-else>-</td>
+        
                 <td
+                  v-if="visit.visited"
                   :class="
-                    visit.status === 'pending'
-                      ? 'badge badge-warning'
-                      : 'badge badge-success'
+                    visit.visited
+                      ? 'badge badge-success'
+                      : 'badge badge-warning'
                   "
-                  class="p-2 mt-2"
+                  class="p-2"
                 >
-                  {{ visit.status }}
+                  See Report
                 </td>
-                <td v-if="visit.nextVisit">{{ visit.nextVisit }}</td>
+                <td
+                  v-else
+                  :class="
+                    visit.visited
+                      ? 'badge badge-success'
+                      : 'badge badge-warning'
+                  "
+                  class="p-2"
+                >
+                  Pending
+                </td>
+                <td v-if="visit.nextVisit">
+                  {{ new Date(visit.nextVisit).toDateString() }}
+                </td>
                 <td v-else>-</td>
-                <td v-if="visit.lastVisit">{{ visit.lastVisit }}</td>
+                <td v-if="visit.lastVisit">
+                  {{ visit.lastVisit.toDate().toDateString() }}
+                </td>
+                <td v-else>-</td>
+                <td v-if="visit.dateBooked">
+                  {{ new Date(visit.dateBooked).toDateString() }}
+                </td>
                 <td v-else>-</td>
                 <td>
-                  <!-- <router-link
+                  <router-link
                     :to="{
                       name: 'visit',
                       params: {
+                        bookedId: visit.bookedId,
                         propertyId: visit.propertyId,
                         userId: visit.userId,
                       },
                     }"
-                    v-if="visit.status === 'Pending'"
+                    v-if="!visit.visited"
                     class="btn-raised btn-sm btn btn-info"
                   >
                     Visit now
@@ -68,15 +91,16 @@
                     :to="{
                       name: 'report',
                       params: {
+                        visitId: visit.visitId,
                         propertyId: visit.propertyId,
                         userId: visit.userId,
                       },
                     }"
-                    v-else-if="visit.status === 'Visited'"
+                    v-else-if="visit.visited"
                     class="btn-raised btn-sm btn btn-success"
                   >
                     See report
-                  </router-link> -->
+                  </router-link>
                 </td>
               </tr>
             </tbody>
@@ -99,10 +123,42 @@ export default {
   },
   data() {
     return {
-      visitedProperties: null,
-      propziVisit: [],
+      allVisits: [],
     };
   },
-  
+  methods: {
+    async getAllVisits() {
+      const doc = await database.collection("UserDetails").get();
+      if (doc.empty) {
+        return;
+      }
+      doc.docs.forEach(async (doc) => {
+        const paths = doc.ref.path;
+        const docs = await database.doc(paths);
+
+        const userCollection = docs.collection("User");
+        const userId = userCollection.parent.id;
+        const propziVisitCollection = docs.collection("PropziVisit");
+
+        // Get Pending Visits
+        const bookedVisits = await propziVisitCollection.get();
+
+        // Check if Visit not empty
+        if (!bookedVisits.empty) {
+          bookedVisits.docs.forEach((propziVisit) => {
+            return this.allVisits.push({
+              ...propziVisit.data(),
+              userId,
+              bookedId: propziVisit.id,
+              visitId: propziVisit.id,
+            });
+          });
+        }
+      });
+    },
+  },
+  mounted() {
+    this.getAllVisits();
+  },
 };
 </script>
