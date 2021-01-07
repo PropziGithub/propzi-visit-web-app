@@ -47,7 +47,7 @@
                   "
                   class="p-2"
                 >
-                  See Report
+                  Visited
                 </td>
                 <td
                   v-else
@@ -141,11 +141,11 @@ export default {
         const propziVisitCollection = docs.collection("PropziVisit");
 
         // Get Pending Visits
-        const bookedVisits = await propziVisitCollection.get();
+        const allVisits = await propziVisitCollection.get();
 
         // Check if Visit not empty
-        if (!bookedVisits.empty) {
-          bookedVisits.docs.forEach((propziVisit) => {
+        if (!allVisits.empty) {
+          allVisits.docs.forEach((propziVisit) => {
             return this.allVisits.push({
               ...propziVisit.data(),
               userId,

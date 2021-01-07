@@ -13,7 +13,12 @@
               <h4>Property Details</h4>
             </div>
             <div class="card-body" id="property-details">
-              <div class="row">
+              <div class="card-body text-center" v-if="property.length === 0">
+                <div class="spinner-grow" role="status" id="propertyMessage">
+                  <span class="visually-hidden">Loading...</span>
+                </div>
+              </div>
+              <div class="row" v-else>
                 <div class="col-6" v-if="property !== {}">
                   <div class="card-title">
                     <strong>Area</strong>: <span>{{ property.area }}</span>
@@ -77,7 +82,7 @@
               </div>
               <div class="card-title">
                 <strong>Next Visit</strong>:
-                <span>{{ new Date( report.nextVisit).toDateString() }}</span>
+                <span>{{ new Date(report.nextVisit).toDateString() }}</span>
               </div>
               <div class="card-title">
                 <strong>Last Visit</strong>:
@@ -100,12 +105,11 @@
                 </button>
               </div>
             </div>
-            <!-- <div class="card-body text-center" id="visit-report" v-else>
-             
+            <div class="card-body text-center" id="visit-report" v-else>
               <div class="spinner-grow" role="status">
                 <span class="visually-hidden">Loading...</span>
               </div>
-            </div> -->
+            </div>
           </div>
         </div>
       </div>
@@ -122,9 +126,8 @@ export default {
     return {
       user: "",
       message: "",
-      property: {},
+      property: [],
       report: null,
-      propertyDetails: [],
     };
   },
   methods: {
@@ -198,10 +201,18 @@ export default {
         this.message = "There was no property found";
       }
     },
+    checkPropertyStatus() {
+      let propertyInnerText = document.getElementById("propertyMessage");
+      let span = propertyInnerText.querySelector("span");
+      setTimeout(() => {
+        span.textContent = "No Property was found";
+      }, 6000);
+    },
   },
   mounted() {
     this.showReport();
     this.showProperty();
+    this.checkPropertyStatus();
   },
 };
 </script>

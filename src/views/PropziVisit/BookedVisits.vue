@@ -22,7 +22,11 @@
             <tbody>
               <tr class="text-center" v-if="bookedVisits.length <= 0">
                 <td colspan="4">
-                  <div class="spinner-grow" role="status">
+                  <div
+                    class="spinner-grow"
+                    role="status"
+                    id="booked-visits-loader"
+                  >
                     <span class="visually-hidden">Loading...</span>
                   </div>
                   <!-- <h5>No Data</h5> -->
@@ -116,10 +120,18 @@ export default {
         }
       });
     },
+
+    checkTableStatus() {
+      let propertyInnerText = document.getElementById("booked-visits-loader");
+      let span = propertyInnerText.querySelector("span");
+      setTimeout(() => {
+        span.textContent = "No booked visits found";
+      }, 6000);
+    },
   },
   mounted() {
     this.getAllVisits();
-    // this.message = location.search.slice(9);
+    this.checkTableStatus();
   },
 };
 </script>
