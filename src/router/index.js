@@ -26,12 +26,12 @@ const routes = [
       ),
   },
   {
-    path: "/report/:propertyId",
+    path: "/report/:userId/:propertyId",
     name: "report",
     component: Report,
   },
   {
-    path: "/visit/:propertyId",
+    path: "/visit/:userId/:propertyId",
     name: "visit",
     component: Visit,
   },

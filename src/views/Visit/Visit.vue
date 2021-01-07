@@ -1,6 +1,6 @@
 <template>
   <main class="container">
-    <!-- Report  -->
+    <!-- Visit Now  -->
     <section class="table-section report" id="all-visits">
       <div class="header" style="margin-top: 9rem;">
         <h3>Visit Now!</h3>
@@ -20,8 +20,8 @@
                     type="text"
                     class="form-control"
                     id="propertyID"
+                    :value="formData.propertyId"
                     readonly
-                    v-model="formData.propertyid"
                   />
                 </div>
               </div>
@@ -126,54 +126,58 @@
 </template>
 
 <script>
+import { database } from "../../firebase/firebaseConfig";
+
 export default {
   name: "Visits-Now",
   data() {
     return {
-      property: {},
       formData: {
-        property: "",
+        propertyId: this.$route.params.propertyId,
         representative: "",
         repRole: "",
         propziImpact: "",
-        insight: "",
+        insights: "",
         description: "",
       },
-
-      reportDetails: [
-        {
-          propertyID: "mkan23sda23ds2a",
-          respresentative: "Patrick Kabwe",
-          nextVisit: "12/12/2020",
-          lastVisit: "12/12/2020",
-          description:
-            "Lorem ipsum dolor sit amet consectetur adipisicing elit. Aliquid, amet molestias ratione eius minus vitae enim commodi fuga possimus, ea delectus esse ipsam vero recusandae accusamus quis blanditiis cumque qui.",
-        },
-        {
-          propertyID: "mkan23sda23ds5a",
-          respresentative: "Patrick Kabwe",
-          nextVisit: "12/12/2020",
-          lastVisit: "12/12/2020",
-          description:
-            "Lorem ipsum dolor sit amet consectetur adipisicing elit. Aliquid, amet molestias ratione eius minus vitae enim commodi fuga possimus, ea delectus esse ipsam vero recusandae accusamus quis blanditiis cumque qui.",
-        },
-      ],
     };
   },
   methods: {
-    getProperty() {
-      const arr = this.reportDetails.filter((property) => {
-        return property.propertyID === this.$route.params.propertyId;
-      });
-      this.property = arr[0];
-      console.log(this.property);
-    },
-    submitformData() {
-      console.log(this.formData)
+    async submitformData() {
+      const doc = await database
+        .collection("UserDetails")
+        .doc(this.$route.params.userId)
+        .get();
+      if (doc.exists) {
+        const paths = doc.ref.path;
+        const collections = await database.doc(paths);
+        const visitedProperty = collections
+          .collection("PropziVisit")
+          .doc("VisitedProperty");
+
+        const visitedPropertyDoc = await database.doc(visitedProperty.path);
+        const allvisitedProperty = visitedPropertyDoc.collection(
+          this.$route.params.propertyId
+        );
+        const propertyCollection = collections.collection("Property");
+        const userCollection = collections.collection("User");
+
+        allvisitedProperty
+          .get()
+          .then((doc) => {
+           console.log(doc.docs);
+          })
+          .catch((err) => {
+            console.log(err.message);
+          });
+      }
+
+      // database.collection('UserDetails')
+      console.log(this.formData);
     },
   },
   mounted() {
-    this.getProperty();
+    this.submitformData();
   },
 };
 </script>

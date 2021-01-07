@@ -14,11 +14,7 @@
             </div>
             <div class="card-body" id="property-details">
               <div class="row">
-                <div
-                  class="col-6"
-                  v-for="property in properties"
-                  :key="property.propertyID"
-                >
+                <div class="col-6" v-if="property !== {}">
                   <div class="card-title">
                     <strong>Area</strong>: <span>{{ property.area }}</span>
                   </div>
@@ -39,11 +35,7 @@
                   </div>
                 </div>
 
-                <div
-                  class="col-6"
-                  v-for="property in properties"
-                  :key="property.propertyID"
-                >
+                <div class="col-6" v-if="property !== {}">
                   <div class="card-title">
                     <strong>propertyClass</strong>:
                     <span>{{ property.propertyClass }}</span>
@@ -72,29 +64,45 @@
         <div class="col-md-6">
           <div class="card">
             <div class="card-header">
-              <h4>Visit Report</h4>
+              <h4>Visit Report - <span class="text-success">{{ user.fullName }}</span></h4>
             </div>
-            <div class="card-body" id="visit-report">
+            <div class="card-body" id="visit-report" v-if="report !== {}">
               <div class="card-title">
-                <strong>Respresentative</strong>: <span>Patrick kabwe</span>
+                <strong>Representative</strong>:
+                <span>{{ report.representative }}</span>
               </div>
               <div class="card-title">
-                <strong>Next Visit</strong>: <span>Toronto</span>
+                <strong>Next Visit</strong>: <span>{{ report.nextVisit }}</span>
               </div>
               <div class="card-title">
-                <strong>Last Visit</strong>: <span>Toronto</span>
+                <strong>Last Visit</strong>: <span>{{ report.lastVisit }}</span>
+              </div>
+              <div class="card-title">
+                <strong>Insights</strong>:
+                <span>{{ report.insights }}</span>
               </div>
               <div class="card-title">
                 <strong>Description</strong>:
-                <span>The roof was neat and didnt have any cracks</span>
+                <span>{{ report.description }}</span>
               </div>
               <div class="card-title mt-4">
-                <a
-                  href=""
+                <button
                   onclick="window.print()"
                   class="btn btn-raised btn-sm btn-primary"
-                  >Print Report</a
                 >
+                  Print Report
+                </button>
+              </div>
+            </div>
+            <div class="card-body text-center" id="visit-report" v-else>
+              <div class="card-title" v-if="message !== ''">
+                <h3>{{ message }}</h3>
+              </div>
+
+              <div class="card-title mt-4">
+                <router-link to="/" class="btn btn-raised btn-sm btn-info">
+                  Back
+                </router-link>
               </div>
             </div>
           </div>
@@ -111,76 +119,88 @@ export default {
   name: "Report",
   data() {
     return {
-      properties: [],
-      propertyDetails: [
-        {
-          propertyID: "mkan23sda23ds2a",
-          area: "Toronto",
-          city: "Toronto",
-          neighbourhood: "nill",
-          numberOfBathrooms: "4",
-          numberOfBedrooms: "1",
-          propertyClass: "Condo",
-          squareFeet: "2000",
-          streetName: "makenis",
-          streetNumber: "53",
-          unitNumber: "126",
-        },
-        {
-          propertyID: "mkan23sda23ds5a",
-          area: "Makeni",
-          city: "Lusaka",
-          neighbourhood: "Makeni villa",
-          numberOfBathrooms: "3",
-          numberOfBedrooms: "1",
-          propertyClass: "Residential",
-          squareFeet: "2000",
-          streetName: "Makeni sport",
-          streetNumber: "324",
-          unitNumber: "0",
-        },
-      ],
-      reportDetails: [
-        {
-          propertyID: "mkan23sda23ds2a",
-          respresentative: "Patrick Kabwe",
-          nextVisit: "12/12/2020",
-          lastVisit: "12/12/2020",
-          description:
-            "Lorem ipsum dolor sit amet consectetur adipisicing elit. Aliquid, amet molestias ratione eius minus vitae enim commodi fuga possimus, ea delectus esse ipsam vero recusandae accusamus quis blanditiis cumque qui.",
-        },
-        {
-          propertyID: "mkan23sda23ds5a",
-          respresentative: "Patrick Kabwe",
-          nextVisit: "12/12/2020",
-          lastVisit: "12/12/2020",
-          description:
-            "Lorem ipsum dolor sit amet consectetur adipisicing elit. Aliquid, amet molestias ratione eius minus vitae enim commodi fuga possimus, ea delectus esse ipsam vero recusandae accusamus quis blanditiis cumque qui.",
-        },
-      ],
+      user: "",
+      message: "",
+      property: {},
+      report: {},
+      propertyDetails: [],
     };
   },
   methods: {
-    getReport() {
-      const visits = this.propertyDetails.filter((visit) => {
-        return visit.propertyID === this.$route.params.propertyId;
-      });
-      this.properties = visits;
-      console.log(visits);
+    async showReport() {
+      const doc = await database
+        .collection("UserDetails")
+        .doc(this.$route.params.userId)
+        .get();
+      if (doc.exists) {
+        const paths = doc.ref.path;
+        const collections = await database.doc(paths);
+        const propziVisitCollection = collections.collection("PropziVisit");
+        const propertyCollection = collections.collection("Property");
+        const userCollection = collections.collection("User");
+
+        propziVisitCollection
+          .doc(this.$route.params.propertyId)
+          .get()
+          .then((doc) => {
+            if (doc.exists) {
+              this.report = doc.data();
+            } else {
+              this.message = "There was no report found";
+            }
+          })
+          .catch((err) => {
+            console.log(err.message);
+          });
+
+        userCollection
+          .where("userId", "==", this.$route.params.userId)
+          .get()
+          .then((doc) => {
+            if (doc.docs[0].data()) {
+              this.user = doc.docs[0].data();
+            }
+          })
+          .catch((err) => {
+            console.log(err.message);
+          });
+      } else {
+        this.message = "There was no report found";
+      }
+    },
+
+    // Get and Show property details
+    async showProperty() {
+      const doc = await database
+        .collection("UserDetails")
+        .doc(this.$route.params.userId)
+        .get();
+      if (doc.exists) {
+        const paths = doc.ref.path;
+        const collections = await database.doc(paths);
+        const propertyCollection = collections.collection("Property");
+        const userCollection = collections.collection("User");
+        propertyCollection
+          .doc(this.$route.params.propertyId)
+          .get()
+          .then((doc) => {
+            if (doc.exists) {
+              this.property = doc.data();
+            } else {
+              this.message = "There was no property found";
+            }
+          })
+          .catch((err) => {
+            console.log(err.message);
+          });
+      } else {
+        this.message = "There was no property found";
+      }
     },
   },
   mounted() {
-    this.getReport();
-    database
-      .collection("UserDetails")
-      .doc("UserID")
-      .collection("Property")
-      .get()
-      .then((querySnapshot) => {
-        querySnapshot.forEach((doc) => {
-          console.log(doc.data());
-        });
-      });
+    this.showReport();
+    this.showProperty();
   },
 };
 </script>

@@ -20,12 +20,21 @@
               </tr>
             </thead>
             <tbody>
+              <tr class="text-center" v-if="visitedProperties.length <= 0">
+                <td colspan="6">
+                  <div class="spinner-grow" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                  </div>
+                  <!-- <h5>No Data</h5> -->
+                </td>
+              </tr>
               <tr
+                v-else
                 class="text-center"
                 v-for="visit in visitedProperties"
-                :key="visit.propertyID"
+                :key="visit.propertyId"
               >
-                <th scope="row">{{ visit.propertyID }}</th>
+                <th scope="row">{{ visit.propertyId }}</th>
                 <td>{{ visit.representive }}</td>
                 <td
                   :class="
@@ -33,7 +42,7 @@
                       ? 'badge badge-warning'
                       : 'badge badge-success'
                   "
-                  class="p-2 mt-3"
+                  class="p-2 mt-2"
                 >
                   {{ visit.status }}
                 </td>
@@ -42,13 +51,13 @@
                 <td>
                   <router-link
                     :to="{
-                      name: 'visit',
-                      params: { propertyId: visit.propertyID },
+                      name: 'report',
+                      params: { propertyId: visit.propertyId,userId:visit.userId },
                     }"
-                    v-if="visit.status.toLowerCase() === 'pending'"
-                    class="btn-raised btn-sm btn btn-info"
+                    v-if="visit.status.toLowerCase() === 'visited'"
+                    class="btn-raised btn-sm btn btn-success"
                   >
-                    Visit now
+                    See Report
                   </router-link>
                 </td>
               </tr>
@@ -62,57 +71,54 @@
 
 <script>
 import NavBarOpt from "../../components/NavBarOpt.vue";
+import { database } from "../../firebase/firebaseConfig";
+import { handleErr } from "../../until";
+
 export default {
   components: { NavBarOpt },
   name: "VisitedProperties",
 
   data() {
     return {
-      visitedProperties: null,
-      propziVisit: [
-        {
-          propertyID: "mkan23sda23ds2a",
-          representive: "Patrick kabwe",
-          status: "Pending",
-          nextVisit: "12/20/2021",
-          lastVisit: "12/20/2020",
-        },
-        {
-          propertyID: "mkan23sda23ds5a",
-          representive: "Patrick kabwe",
-          status: "Visited",
-          nextVisit: "12/20/2021",
-          lastVisit: "12/20/2020",
-        },
-        {
-          propertyID: "mkan23sda231dsa",
-          representive: "Patrick kabwe",
-          status: "Visited",
-          nextVisit: "12/20/2021",
-          lastVisit: "12/20/2020",
-        },
-        {
-          propertyID: "mkan23sda23ds4a",
-          representive: "Patrick kabwe",
-          status: "Visited",
-          nextVisit: "12/20/2021",
-          lastVisit: "12/20/2020",
-        },
-      ],
+      visitedProperties: [],
     };
   },
 
   methods: {
-    getVisitedProperties() {
-      const visits = this.propziVisit.filter((visit) => {
-        return visit.status.toLowerCase() !== "visited";
+    async getAllVisits() {
+      const doc = await database.collection("UserDetails").get();
+      if (doc.empty) {
+        return;
+      }
+      doc.docs.forEach(async (doc) => {
+        const paths = doc.ref.path;
+        const collections = await database.doc(paths);
+
+        const userCollection = collections.collection("User");
+        const userId = userCollection.parent.id;
+        const propziVisitCollection = collections.collection("PropziVisit");
+
+        // Get Pending Visits
+        const propziVisits = await propziVisitCollection
+          .where("status", "==", "Visited")
+          .get();
+
+        // Check if Visit not empty
+        if (!propziVisits.empty) {
+          propziVisits.forEach((propziVisit) => {
+            return this.visitedProperties.push({
+              ...propziVisit.data(),
+              userId,
+            });
+          });
+        }
       });
-      this.visitedProperties = visits;
-      console.log(visits);
     },
   },
   mounted() {
-    this.getVisitedProperties();
+    // this.getRegisteredVisites();
+    this.getAllVisits();
+    console.log(12);
   },
 };
 </script>
