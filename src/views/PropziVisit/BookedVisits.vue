@@ -102,14 +102,16 @@ export default {
         const userId = userCollection.parent.id;
         const propziVisitCollection = docs.collection("PropziVisit");
 
+     
         // Get Pending Visits
         const bookedVisits = await propziVisitCollection
           .where("visited", "==", false)
           .get();
-
+   console.log(doc);
         // Check if Visit not empty
         if (!bookedVisits.empty) {
           bookedVisits.docs.forEach((propziVisit) => {
+            console.log(propziVisit.data());
             return this.bookedVisits.push({
               ...propziVisit.data(),
               userId,
