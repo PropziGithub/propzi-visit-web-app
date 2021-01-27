@@ -1,5 +1,5 @@
 <template>
-  <div id="nav">
+  <div id="nav" v-if="showNav">
     <NavBarAll />
   </div>
   <router-view />
@@ -14,8 +14,15 @@ export default {
     NavBarAll,
   },
   data() {
-    return {};
+    return {
+      showNav:true
+    };
   },
+  mounted(){
+    if(location.pathname === '/login'){
+      this.showNav = false
+    }
+  }
 };
 </script>
 <style>
@@ -54,7 +61,7 @@ h4 {
   margin-bottom: 0 !important;
 }
 
-select option{
+select option {
   font-size: 14px !important;
 }
 /* .is-filled{
@@ -84,5 +91,4 @@ select option{
     width: 100% !important;
   }
 }
-
 </style>

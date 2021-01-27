@@ -77,7 +77,6 @@
 <script>
 import NavBarOpt from "../../components/NavBarOpt.vue";
 import { database } from "../../firebase/firebaseConfig";
-import { handleErr } from "../../until";
 
 export default {
   components: { NavBarOpt },

@@ -1,9 +1,15 @@
 import { createRouter, createWebHistory } from "vue-router";
+import Login from "../views/Auth/Login.vue";
 import PropziVisit from "../views/PropziVisit/PropziVisit.vue";
 import Report from "../views/Report/Report.vue";
 import Visit from "../views/Visit/Visit.vue";
 
 const routes = [
+  {
+    path: "/login",
+    name: "login",
+    component: Login,
+  },
   {
     path: "/",
     name: "propzi-visit",

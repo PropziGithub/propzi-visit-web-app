@@ -4,6 +4,14 @@ import router from "./router";
 import firebaseConfig from "./firebase/firebaseConfig";
 import firebase from "firebase";
 
-createApp(App)
-  .use(router)
-  .mount("#app");
+let app;
+
+firebase.auth().onAuthStateChanged((user) => {
+  if (!app) {
+    user;
+    createApp(App)
+    .use(router)
+    .mount("#app");
+  }
+});
+
