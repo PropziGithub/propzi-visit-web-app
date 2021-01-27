@@ -22,7 +22,7 @@
             </thead>
             <tbody>
               <tr class="text-center" v-if="allVisits.length <= 0">
-                <td colspan="6">
+                <td colspan="7">
                   <div class="spinner-grow" role="status">
                     <span class="visually-hidden">Loading...</span>
                   </div>
